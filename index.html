@@ -1,0 +1,1329 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>HIM GEM-X Experiment Calculator</title>
+<style>
+  :root {
+    --uchicago-maroon: #800000;
+    --uchicago-dark-gray: #767676;
+    --uchicago-light-gray: #D6D6CE;
+    --bg: #ffffff;
+    --ink: #1a1a1a;
+    --muted: #5a5a5a;
+    --line: #e0e0e0;
+    --panel: #f9f9f9;
+    --accent: var(--uchicago-maroon);
+    --accent-light: #a6192e;
+    --warn: #c75300;
+    --ok: #2e7d32;
+  }
+  
+  * { box-sizing: border-box; }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    padding: 24px;
+    color: var(--ink);
+    background: linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
+    line-height: 1.5;
+  }
+  
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  
+  /* Header */
+  .header {
+    background: var(--accent);
+    color: white;
+    padding: 32px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(128, 0, 0, 0.15);
+  }
+  
+  h1 {
+    margin: 0 0 8px 0;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  
+  .subtitle {
+    margin: 0;
+    opacity: 0.95;
+    font-size: 16px;
+    font-weight: 400;
+  }
+  
+  .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-left: 12px;
+    vertical-align: middle;
+  }
+  
+  /* Cards */
+  .card {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  
+  h2 {
+    margin: 0 0 16px 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  h3 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  
+  /* Forms */
+  label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    margin: 16px 0 6px 0;
+  }
+  
+  label:first-of-type {
+    margin-top: 0;
+  }
+  
+  select, input[type="number"], input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid var(--line);
+    border-radius: 8px;
+    font-size: 15px;
+    background: white;
+    transition: all 0.2s;
+  }
+  
+  select:focus, input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1);
+  }
+  
+  .row2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  
+  .row3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  
+  @media (max-width: 1100px) {
+    .row3 { grid-template-columns: 1fr; }
+    .row2 { grid-template-columns: 1fr; }
+  }
+  
+  /* Checkboxes */
+  .checks {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  
+  .check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 6px;
+    transition: background 0.2s;
+  }
+  
+  .check:hover {
+    background: var(--panel);
+  }
+  
+  .check input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--accent);
+  }
+  
+  .check span {
+    font-size: 14px;
+    cursor: pointer;
+  }
+  
+  /* Method cards */
+  .method-card {
+    background: white;
+    border: 2px solid var(--line);
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.2s;
+  }
+  
+  .method-card.enabled {
+    border-color: var(--accent);
+    box-shadow: 0 2px 12px rgba(128, 0, 0, 0.1);
+  }
+  
+  .method-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--panel);
+  }
+  
+  .toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+  }
+  
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .3s;
+    border-radius: 24px;
+  }
+  
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+  }
+  
+  input:checked + .slider {
+    background-color: var(--accent);
+  }
+  
+  input:checked + .slider:before {
+    transform: translateX(20px);
+  }
+  
+  /* Messages */
+  .msg {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-top: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    border-left: 4px solid;
+  }
+  
+  .msg.info {
+    background: #e3f2fd;
+    border-color: #2196f3;
+    color: #0d47a1;
+  }
+  
+  .msg.warn {
+    background: #fff3e0;
+    border-color: var(--warn);
+    color: #e65100;
+  }
+  
+  .msg.ok {
+    background: #e8f5e9;
+    border-color: var(--ok);
+    color: #1b5e20;
+  }
+  
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  
+  th {
+    background: var(--accent);
+    color: white;
+    text-align: left;
+    padding: 14px 16px;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+    vertical-align: top;
+  }
+  
+  tr:last-child td {
+    border-bottom: none;
+  }
+  
+  tr:nth-child(even) {
+    background: rgba(128, 0, 0, 0.02);
+  }
+  
+  .mono {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+  }
+  
+  /* Workflow visualization */
+  .workflow {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  
+  .phase {
+    padding: 6px 0;
+    border-left: 3px solid var(--accent);
+    padding-left: 10px;
+    margin: 4px 0;
+  }
+  
+  .phase-title {
+    font-weight: 600;
+    color: var(--accent);
+  }
+  
+  .phase-time {
+    color: var(--muted);
+    font-size: 12px;
+  }
+  
+  /* Pills */
+  .pill {
+    display: inline-block;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--ink);
+    margin: 3px;
+    font-weight: 500;
+  }
+  
+  .pill.primary {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+  
+  /* Info box */
+  .info-box {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  
+  .info-box strong {
+    color: var(--accent);
+  }
+  
+  /* Pricing editor */
+  .pricing-editor {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    background: var(--panel);
+    padding: 16px;
+    border-radius: 8px;
+    margin-top: 12px;
+  }
+  
+  .pricing-item label {
+    margin: 0 0 4px 0;
+    font-size: 12px;
+  }
+  
+  .pricing-item input {
+    padding: 8px;
+    font-size: 14px;
+  }
+  
+  /* Buttons */
+  .btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .btn:hover {
+    background: var(--accent-light);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(128, 0, 0, 0.2);
+  }
+  
+  .btn-secondary {
+    background: white;
+    color: var(--accent);
+    border: 2px solid var(--accent);
+  }
+  
+  .btn-secondary:hover {
+    background: var(--accent);
+    color: white;
+  }
+  
+  /* Comparison selector buttons */
+  .comparison-btn {
+    padding: 10px 20px;
+    background: white;
+    color: var(--ink);
+    border: 2px solid var(--line);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .comparison-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  
+  .comparison-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+  
+  /* Footer */
+  .footer {
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 2px solid var(--line);
+    color: var(--muted);
+    font-size: 13px;
+    text-align: center;
+  }
+  
+  /* Hide disabled methods */
+  .method-card.disabled {
+    display: none;
+  }
+  
+  /* Workflow phases table */
+  .workflow-table {
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  
+  .workflow-table td {
+    padding: 8px;
+  }
+  
+  .workflow-phase-row {
+    background: rgba(128, 0, 0, 0.03);
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>HIM GEM-X Experiment Calculator <span class="badge">v2.0</span></h1>
+      <p class="subtitle">Compare workflows, estimate costs, and plan your single-cell experiments | Generated January 16, 2026</p>
+    </div>
+
+    <!-- Shared Inputs -->
+    <div class="card">
+      <h2>Shared Settings</h2>
+      
+      <div class="row2">
+        <div>
+          <label for="sampleType">Sample type</label>
+          <select id="sampleType">
+            <option value="cells">Single cells (cell suspension)</option>
+            <option value="nuclei">Single nuclei (nuclei suspension)</option>
+          </select>
+        </div>
+        <div>
+          <label for="nSamples">Number of samples</label>
+          <input id="nSamples" type="number" min="1" step="1" value="16"/>
+        </div>
+      </div>
+      
+      <!-- Validation message for sample type conflicts -->
+      <div id="sampleTypeWarning" class="msg warn" style="display:none; margin-top: 12px;">
+        <strong>Sample Type Conflict:</strong> <span id="warningText"></span>
+      </div>
+
+      <!-- Pricing Info (Read-only) -->
+      <h3 style="margin-top: 24px;">HIM Service Pricing</h3>
+      <div class="pricing-editor" style="opacity: 0.7;">
+        <div class="pricing-item">
+          <label>Base fee per chip</label>
+          <input id="priceBase" type="number" value="732" readonly style="background: #f5f5f5; cursor: not-allowed;"/>
+        </div>
+        <div class="pricing-item">
+          <label>Sample prep per sample</label>
+          <input id="pricePrep" type="number" value="146" readonly style="background: #f5f5f5; cursor: not-allowed;"/>
+        </div>
+        <div class="pricing-item">
+          <label>Feature library add-on</label>
+          <input id="priceFeature" type="number" value="170" readonly style="background: #f5f5f5; cursor: not-allowed;"/>
+        </div>
+      </div>
+      <div style="margin-top: 8px; padding: 10px; background: #fff7e6; border-left: 4px solid var(--warn); border-radius: 6px; font-size: 13px;">
+        <strong>Cancer Center Discount:</strong> UChicago Comprehensive Cancer Center members receive <strong>20% off</strong> all HIM service fees. Contact HIM for pricing details.
+      </div>
+
+      <div class="info-box">
+        <strong>Library Calculation Rules:</strong><br/>
+        • <strong>Singleplex/Multiome:</strong> 8 samples/chip, 1 library per sample (1:1 ratio)<br/>
+        • <strong>OCM:</strong> 8 samples/chip, 4 samples → 1 pooled library<br/>
+        • <strong>Flex (small):</strong> 1-16 samples → 1 lib, 17-32 samples → 2 libs<br/>
+        • <strong>Flex (large):</strong> 33-50 samples → 1 lib, 51-96 samples → 2 libs<br/>
+        • <strong>Timeline:</strong> Shown per batch. Multiple batches processed sequentially (time × batches).
+      </div>
+    </div>
+
+    <!-- Method Configuration -->
+    <div class="card">
+      <h2>Assay Selection</h2>
+      
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 600;">Number of assays to compare</label>
+        <div style="display: flex; gap: 10px;">
+          <button class="comparison-btn active" data-count="1">Single Assay</button>
+          <button class="comparison-btn" data-count="2">Compare 2 Assays</button>
+          <button class="comparison-btn" data-count="3">Compare 3 Assays</button>
+        </div>
+      </div>
+      
+      <div class="row3">
+        <!-- Method A -->
+        <div class="method-card enabled" id="cardA">
+          <div class="method-header">
+            <h3>Method A</h3>
+            <label class="toggle-switch">
+              <input type="checkbox" id="enableA" checked/>
+              <span class="slider"></span>
+            </label>
+          </div>
+          
+          <label for="assayA">Assay type</label>
+          <select id="assayA">
+            <option value="flex">Flex v2 (multiplexed, fixed)</option>
+            <option value="single_5">Singleplex 5′</option>
+            <option value="single_3">Singleplex 3′</option>
+            <option value="ocm5">OCM 5′ (4-plex)</option>
+            <option value="ocm3">OCM 3′ (4-plex)</option>
+            <option value="multiome">Multiome (ATAC + Gene)</option>
+          </select>
+          
+          <label for="targetA">Target recovery (auto-fills per assay)</label>
+          <input id="targetA" type="number" min="1000" step="1000" value="20000"/>
+          
+          <label>Add-ons</label>
+          <div class="checks">
+            <div class="check"><input id="A_surface" type="checkbox"/> <span>Cell surface protein</span></div>
+            <div class="check"><input id="A_intra" type="checkbox"/> <span>Intracellular protein</span></div>
+            <div class="check"><input id="A_vdj" type="checkbox"/> <span>V(D)J (TCR/BCR)</span></div>
+            <div class="check"><input id="A_crispr" type="checkbox"/> <span>CRISPR guide</span></div>
+          </div>
+          
+          <label for="A_prep">HIM sample prep/selection (+$146/sample)</label>
+          <select id="A_prep">
+            <option value="none">None</option>
+            <option value="cd45">CD45 selection</option>
+            <option value="cd3">CD3 selection</option>
+            <option value="nuclei">Single nuclei extraction</option>
+            <option value="other">Other (specify in notes)</option>
+          </select>
+          
+          <div id="warningA" class="msg warn" style="display:none; margin-top: 12px;"></div>
+        </div>
+
+        <!-- Method B -->
+        <div class="method-card" id="cardB">
+          <div class="method-header">
+            <h3>Method B</h3>
+            <label class="toggle-switch">
+              <input type="checkbox" id="enableB"/>
+              <span class="slider"></span>
+            </label>
+          </div>
+          
+          <label for="assayB">Assay type</label>
+          <select id="assayB">
+            <option value="flex">Flex v2 (multiplexed, fixed)</option>
+            <option value="single_5">Singleplex 5′</option>
+            <option value="single_3" selected>Singleplex 3′</option>
+            <option value="ocm5">OCM 5′ (4-plex)</option>
+            <option value="ocm3">OCM 3′ (4-plex)</option>
+            <option value="multiome">Multiome (ATAC + Gene)</option>
+          </select>
+          
+          <label for="targetB">Target recovery (auto-fills per assay)</label>
+          <input id="targetB" type="number" min="1000" step="1000" value="20000"/>
+          
+          <label>Add-ons</label>
+          <div class="checks">
+            <div class="check"><input id="B_surface" type="checkbox"/> <span>Cell surface protein</span></div>
+            <div class="check"><input id="B_intra" type="checkbox"/> <span>Intracellular protein</span></div>
+            <div class="check"><input id="B_vdj" type="checkbox"/> <span>V(D)J (TCR/BCR)</span></div>
+            <div class="check"><input id="B_crispr" type="checkbox"/> <span>CRISPR guide</span></div>
+          </div>
+          
+          <label for="B_prep">HIM sample prep/selection (+$146/sample)</label>
+          <select id="B_prep">
+            <option value="none">None</option>
+            <option value="cd45">CD45 selection</option>
+            <option value="cd3">CD3 selection</option>
+            <option value="nuclei">Single nuclei extraction</option>
+            <option value="other">Other (specify in notes)</option>
+          </select>
+          
+          <div id="warningB" class="msg warn" style="display:none; margin-top: 12px;"></div>
+        </div>
+
+        <!-- Method C -->
+        <div class="method-card" id="cardC">
+          <div class="method-header">
+            <h3>Method C</h3>
+            <label class="toggle-switch">
+              <input type="checkbox" id="enableC"/>
+              <span class="slider"></span>
+            </label>
+          </div>
+          
+          <label for="assayC">Assay type</label>
+          <select id="assayC">
+            <option value="flex">Flex v2 (multiplexed, fixed)</option>
+            <option value="single_5">Singleplex 5′</option>
+            <option value="single_3">Singleplex 3′</option>
+            <option value="ocm5" selected>OCM 5′ (4-plex)</option>
+            <option value="ocm3">OCM 3′ (4-plex)</option>
+            <option value="multiome">Multiome (ATAC + Gene)</option>
+          </select>
+          
+          <label for="targetC">Target recovery (auto-fills per assay)</label>
+          <input id="targetC" type="number" min="1000" step="1000" value="5000"/>
+          
+          <label>Add-ons</label>
+          <div class="checks">
+            <div class="check"><input id="C_surface" type="checkbox"/> <span>Cell surface protein</span></div>
+            <div class="check"><input id="C_intra" type="checkbox"/> <span>Intracellular protein</span></div>
+            <div class="check"><input id="C_vdj" type="checkbox"/> <span>V(D)J (TCR/BCR)</span></div>
+            <div class="check"><input id="C_crispr" type="checkbox"/> <span>CRISPR guide</span></div>
+          </div>
+          
+          <label for="C_prep">HIM sample prep/selection (+$146/sample)</label>
+          <select id="C_prep">
+            <option value="none">None</option>
+            <option value="cd45">CD45 selection</option>
+            <option value="cd3">CD3 selection</option>
+            <option value="nuclei">Single nuclei extraction</option>
+            <option value="other">Other (specify in notes)</option>
+          </select>
+          
+          <div id="warningC" class="msg warn" style="display:none; margin-top: 12px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparison Table -->
+    <div class="card">
+      <h2>Comparison</h2>
+      
+      <table id="comparisonTable">
+        <thead>
+          <tr>
+            <th style="width: 22%;">Specification</th>
+            <th style="width: 26%;" id="colA">Method A</th>
+            <th style="width: 26%;" id="colB">Method B</th>
+            <th style="width: 26%;" id="colC">Method C</th>
+          </tr>
+        </thead>
+        <tbody id="comparisonBody">
+          <!-- Populated by JavaScript -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Workflow Phases -->
+    <div class="card">
+      <h2>Workflow Overview (Normalized Phases)</h2>
+      
+      <p style="color: var(--muted); margin: 0 0 16px 0; font-size: 14px;">
+        All workflows use the same 5-phase structure. Assay-specific steps appear within each phase.
+      </p>
+      
+      <table class="workflow-table">
+        <thead>
+          <tr>
+            <th style="width: 22%;">Workflow Phase</th>
+            <th style="width: 26%;" id="flowColA">Method A</th>
+            <th style="width: 26%;" id="flowColB">Method B</th>
+            <th style="width: 26%;" id="flowColC">Method C</th>
+          </tr>
+        </thead>
+        <tbody id="workflowBody">
+          <!-- Populated by JavaScript -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      <p><strong>University of Chicago | Human Immunology and Multiplex Imaging (HIM) Facility</strong></p>
+      <p>Calculator v2.0 | Generated January 16, 2026 | For research use only</p>
+      <p style="margin-top: 8px; font-size: 12px;">Pricing and timelines are estimates. Contact HIM for current rates and consultation.</p>
+    </div>
+  </div>
+
+<script>
+(function() {
+  'use strict';
+  
+  // Assay definitions with realistic daily breakdown
+  const assayData = {
+    flex: {
+      name: "Flex v2 (multiplexed, fixed)",
+      capacity: 96,
+      timeline: "~4 days",
+      phases: {
+        prep: "Day 1: Fixation + Probe hyb setup (30min) → Overnight ⏸",
+        gem: "Day 2 AM: Barcode hyb (2.9h) + Post-wash (1.7h)",
+        cleanup: "Day 2 PM: GEM generation (2.8h) ⏸ | Day 3: Pre-amp (4.6h) ⏸",
+        lib: "Day 4: Gene expression library (3.5h)",
+        feature: "Day 4: Protein library (2.5h, parallel)"
+      }
+    },
+    single_3: {
+      name: "Singleplex 3′",
+      capacity: 8,
+      timeline: "~2 days",
+      phases: {
+        prep: "Day 1 prep: Cell QC + Optional CD45/CD3",
+        gem: "Day 1 AM: GEM generation + RT (2h)",
+        cleanup: "Day 1 PM: Cleanup + cDNA amp + QC (3.5h) ⏸",
+        lib: "Day 2: Gene expression library (4.5h)",
+        feature: "Day 2: Protein library (2.5h, parallel)"
+      }
+    },
+    single_5: {
+      name: "Singleplex 5′",
+      capacity: 8,
+      timeline: "~3 days",
+      phases: {
+        prep: "Day 1 prep: Cell QC + Optional CD45/CD3",
+        gem: "Day 1 AM: GEM generation + RT (2h)",
+        cleanup: "Day 1 PM: Cleanup + cDNA amp + QC (3.5h) ⏸",
+        lib: "Day 2: V(D)J amplification + library (8h) ⏸ | Day 3: Gene lib (4.5h)",
+        feature: "Day 3: Protein library (2.5h, parallel)"
+      }
+    },
+    ocm3: {
+      name: "OCM 3′ (4-plex)",
+      capacity: 8,
+      timeline: "~2 days",
+      phases: {
+        prep: "Day 1 prep: Cell QC + Barcode assignment",
+        gem: "Day 1 AM: 4-plex OCM chip + RT (2h)",
+        cleanup: "Day 1 PM: Cleanup + cDNA amp + QC (3.5h) ⏸",
+        lib: "Day 2: Gene expression library, pooled (4.5h)",
+        feature: "Day 2: Protein library (2.5h, parallel)"
+      }
+    },
+    ocm5: {
+      name: "OCM 5′ (4-plex)",
+      capacity: 8,
+      timeline: "~3 days",
+      phases: {
+        prep: "Day 1 prep: Cell QC + Barcode assignment",
+        gem: "Day 1 AM: 4-plex OCM chip + RT (1.8h)",
+        cleanup: "Day 1 PM: Cleanup + cDNA amp + QC (3.2h) ⏸",
+        lib: "Day 2: V(D)J amplification + library (8h) ⏸ | Day 3: Gene lib (4.3h)",
+        feature: "Day 3: Protein library (2.5h, parallel)"
+      }
+    },
+    multiome: {
+      name: "Multiome (ATAC + Gene)",
+      capacity: 8,
+      timeline: "~2.5 days",
+      phases: {
+        prep: "Day 1: Nuclei isolation + Probe hyb setup → Overnight ⏸",
+        gem: "Day 2 AM: GEM generation + RT (2.5h)",
+        cleanup: "Day 2 PM: Cleanup only (1h) ⏸",
+        lib: "Day 3: Gene expression library (4h)",
+        feature: "Day 3: ATAC library (3h, parallel)"
+      }
+    }
+  };
+  
+  // Library calculation logic
+  function calculateLibraries(assay, samples, addons) {
+    let libs = { gene: 0, protein: 0, vdj: 0, crispr: 0, atac: 0 };
+    
+    if (assay === 'flex') {
+      // Flex library logic
+      let librariesPerType;
+      if (samples <= 16) librariesPerType = 1;
+      else if (samples <= 32) librariesPerType = 2;
+      else if (samples <= 50) librariesPerType = 1;
+      else if (samples <= 96) librariesPerType = 2;
+      else librariesPerType = Math.ceil(samples / 96) * 2;
+      
+      libs.gene = librariesPerType;
+      if (addons.surface || addons.intra) libs.protein = librariesPerType;
+      
+    } else if (assay === 'ocm3' || assay === 'ocm5') {
+      // OCM: 4 samples → 1 output
+      const outputs = Math.ceil(samples / 4);
+      libs.gene = outputs;
+      if (addons.surface) libs.protein = outputs;
+      if (addons.vdj && assay === 'ocm5') libs.vdj = outputs;
+      if (addons.crispr && assay === 'ocm5') libs.crispr = outputs;
+      
+    } else if (assay === 'multiome') {
+      // Multiome: 1:1 ratio, always ATAC + Gene
+      libs.gene = samples;
+      libs.atac = samples;
+      
+    } else {
+      // Singleplex: 1:1 ratio
+      libs.gene = samples;
+      if (addons.surface) libs.protein = samples;
+      if (addons.vdj && assay === 'single_5') libs.vdj = samples;
+      if (addons.crispr && assay === 'single_5') libs.crispr = samples;
+    }
+    
+    return libs;
+  }
+  
+  // Check if Multiome method has valid nuclei source
+  function isMultiomeValid(id, assay) {
+    if (assay !== 'multiome') return true; // Not multiome, always valid
+    
+    const sampleType = document.getElementById('sampleType').value;
+    const prepType = document.getElementById(id + '_prep').value;
+    
+    // Valid if either: (1) nuclei sample type, OR (2) nuclei extraction selected
+    return sampleType === 'nuclei' || prepType === 'nuclei';
+  }
+  
+  // Calculate costs and specs
+  function calculateMethod(id) {
+    const enabled = document.getElementById('enable' + id).checked;
+    if (!enabled) return null;
+    
+    const assay = document.getElementById('assay' + id).value;
+    
+    // Block Multiome if no nuclei source
+    if (!isMultiomeValid(id, assay)) {
+      return null; // Don't show in comparison
+    }
+    
+    const nSamples = parseInt(document.getElementById('nSamples').value);
+    const target = parseInt(document.getElementById('target' + id).value);
+    
+    const addons = {
+      surface: document.getElementById(id + '_surface').checked,
+      intra: document.getElementById(id + '_intra').checked,
+      vdj: document.getElementById(id + '_vdj').checked,
+      crispr: document.getElementById(id + '_crispr').checked,
+      prep: document.getElementById(id + '_prep').value !== 'none'
+    };
+    
+    const prepType = document.getElementById(id + '_prep').value;
+    
+    const priceBase = parseInt(document.getElementById('priceBase').value);
+    const pricePrep = parseInt(document.getElementById('pricePrep').value);
+    const priceFeature = parseInt(document.getElementById('priceFeature').value);
+    
+    // Calculate chips
+    const capacity = assayData[assay].capacity;
+    const chips = Math.ceil(nSamples / capacity);
+    
+    // Calculate libraries
+    const libs = calculateLibraries(assay, nSamples, addons);
+    const totalLibs = libs.gene + libs.protein + libs.vdj + libs.crispr + libs.atac;
+    const featureLibs = libs.protein + libs.vdj + libs.crispr + libs.atac; // ATAC IS charged as feature
+    
+    // Calculate costs
+    const baseFee = chips * priceBase;
+    const prepFee = addons.prep ? nSamples * pricePrep : 0;
+    const featureFee = featureLibs * priceFeature;
+    const totalCost = baseFee + prepFee + featureFee;
+    
+    // Calculate timeline (base timeline × batches for sequential processing)
+    const baseTimeline = assayData[assay].timeline;
+    const timelineWithBatches = chips > 1 ? `~${parseTimeline(baseTimeline) * chips} days (${chips} batches)` : baseTimeline;
+    
+    return {
+      enabled: true,
+      assay,
+      assayName: assayData[assay].name,
+      nSamples,
+      target,
+      chips,
+      capacity,
+      addons,
+      prepType,
+      libs,
+      totalLibs,
+      featureLibs,
+      baseFee,
+      prepFee,
+      featureFee,
+      totalCost,
+      timeline: timelineWithBatches,
+      phases: assayData[assay].phases
+    };
+  }
+  
+  // Helper to parse timeline string (e.g., "~4 days" -> 4)
+  function parseTimeline(timelineStr) {
+    const match = timelineStr.match(/~?(\d+\.?\d*)/);
+    return match ? parseFloat(match[1]) : 0;
+  }
+  
+  // Format currency
+  function fmt(n) {
+    return '$' + n.toLocaleString();
+  }
+  
+  // Update comparison table
+  function updateComparison() {
+    const methods = {
+      A: calculateMethod('A'),
+      B: calculateMethod('B'),
+      C: calculateMethod('C')
+    };
+    
+    // Hide disabled method columns in comparison, but keep cards visible
+    ['A', 'B', 'C'].forEach(id => {
+      const enabled = document.getElementById('enable' + id).checked;
+      const methodData = methods[id];
+      const showInComparison = methodData !== null;
+      
+      document.getElementById('col' + id).style.display = showInComparison ? '' : 'none';
+      document.getElementById('flowCol' + id).style.display = showInComparison ? '' : 'none';
+      
+      // Update card styling based on toggle, NOT on comparison validity
+      const card = document.getElementById('card' + id);
+      if (enabled) {
+        card.classList.add('enabled');
+        card.classList.remove('disabled');
+      } else {
+        card.classList.remove('enabled');
+        card.classList.add('disabled');
+      }
+    });
+    
+    // Build comparison rows
+    const rows = [];
+    
+    rows.push(['<strong>Assay</strong>', 
+      methods.A ? methods.A.assayName : '',
+      methods.B ? methods.B.assayName : '',
+      methods.C ? methods.C.assayName : ''
+    ]);
+    
+    rows.push(['<strong># Samples</strong>', 
+      methods.A ? methods.A.nSamples : '',
+      methods.B ? methods.B.nSamples : '',
+      methods.C ? methods.C.nSamples : ''
+    ]);
+    
+    rows.push(['<strong># Chips/Batches</strong>', 
+      methods.A ? methods.A.chips : '',
+      methods.B ? methods.B.chips : '',
+      methods.C ? methods.C.chips : ''
+    ]);
+    
+    rows.push(['<strong>Target Recovery</strong>', 
+      methods.A ? methods.A.target.toLocaleString() + ' cells' : '',
+      methods.B ? methods.B.target.toLocaleString() + ' cells' : '',
+      methods.C ? methods.C.target.toLocaleString() + ' cells' : ''
+    ]);
+    
+    rows.push(['<strong>Add-ons Selected</strong>',
+      methods.A ? formatAddons(methods.A.addons, methods.A.prepType) : '',
+      methods.B ? formatAddons(methods.B.addons, methods.B.prepType) : '',
+      methods.C ? formatAddons(methods.C.addons, methods.C.prepType) : ''
+    ]);
+    
+    rows.push(['<strong>Libraries Generated</strong>',
+      methods.A ? formatLibraries(methods.A.libs) : '',
+      methods.B ? formatLibraries(methods.B.libs) : '',
+      methods.C ? formatLibraries(methods.C.libs) : ''
+    ]);
+    
+    rows.push(['<strong>Total Libraries</strong>',
+      methods.A ? methods.A.totalLibs : '',
+      methods.B ? methods.B.totalLibs : '',
+      methods.C ? methods.C.totalLibs : ''
+    ]);
+    
+    rows.push(['<strong>HIM Base Fee</strong>',
+      methods.A ? '<span class="mono">' + fmt(methods.A.baseFee) + '</span>' : '',
+      methods.B ? '<span class="mono">' + fmt(methods.B.baseFee) + '</span>' : '',
+      methods.C ? '<span class="mono">' + fmt(methods.C.baseFee) + '</span>' : ''
+    ]);
+    
+    rows.push(['<strong>Sample Prep Fee</strong>',
+      methods.A ? '<span class="mono">' + fmt(methods.A.prepFee) + '</span>' : '',
+      methods.B ? '<span class="mono">' + fmt(methods.B.prepFee) + '</span>' : '',
+      methods.C ? '<span class="mono">' + fmt(methods.C.prepFee) + '</span>' : ''
+    ]);
+    
+    rows.push(['<strong>Feature Add-on Fee</strong>',
+      methods.A ? '<span class="mono">' + fmt(methods.A.featureFee) + '</span>' : '',
+      methods.B ? '<span class="mono">' + fmt(methods.B.featureFee) + '</span>' : '',
+      methods.C ? '<span class="mono">' + fmt(methods.C.featureFee) + '</span>' : ''
+    ]);
+    
+    rows.push(['<strong>TOTAL HIM COST</strong>',
+      methods.A ? '<strong class="mono" style="color: var(--accent);">' + fmt(methods.A.totalCost) + '</strong>' : '',
+      methods.B ? '<strong class="mono" style="color: var(--accent);">' + fmt(methods.B.totalCost) + '</strong>' : '',
+      methods.C ? '<strong class="mono" style="color: var(--accent);">' + fmt(methods.C.totalCost) + '</strong>' : ''
+    ]);
+    
+    rows.push(['<strong>Cost per Sample</strong>',
+      methods.A ? '<span class="mono">' + fmt(Math.round(methods.A.totalCost / methods.A.nSamples)) + '</span>' : '',
+      methods.B ? '<span class="mono">' + fmt(Math.round(methods.B.totalCost / methods.B.nSamples)) + '</span>' : '',
+      methods.C ? '<span class="mono">' + fmt(Math.round(methods.C.totalCost / methods.C.nSamples)) + '</span>' : ''
+    ]);
+    
+    rows.push(['<strong>Time</strong>',
+      methods.A ? methods.A.timeline : '',
+      methods.B ? methods.B.timeline : '',
+      methods.C ? methods.C.timeline : ''
+    ]);
+    
+    // Populate table
+    const tbody = document.getElementById('comparisonBody');
+    tbody.innerHTML = rows.map(r => 
+      `<tr>
+        <td>${r[0]}</td>
+        ${methods.A ? `<td>${r[1]}</td>` : ''}
+        ${methods.B ? `<td>${r[2]}</td>` : ''}
+        ${methods.C ? `<td>${r[3]}</td>` : ''}
+      </tr>`
+    ).join('');
+    
+    // Update workflow table
+    updateWorkflowTable(methods);
+  }
+  
+  // Format add-ons
+  function formatAddons(addons, prepType) {
+    const list = [];
+    if (addons.surface) list.push('Surface protein');
+    if (addons.intra) list.push('Intracellular protein');
+    if (addons.vdj) list.push('V(D)J');
+    if (addons.crispr) list.push('CRISPR');
+    if (addons.prep) {
+      const prepLabels = {
+        'cd45': 'CD45 selection',
+        'cd3': 'CD3 selection',
+        'nuclei': 'Nuclei extraction',
+        'other': 'Other prep'
+      };
+      list.push(prepLabels[prepType] || 'Sample prep');
+    }
+    return list.length > 0 ? list.join(', ') : 'None';
+  }
+  
+  // Format libraries
+  function formatLibraries(libs) {
+    const parts = [];
+    if (libs.gene > 0) parts.push(`${libs.gene} Gene`);
+    if (libs.protein > 0) parts.push(`${libs.protein} Protein`);
+    if (libs.vdj > 0) parts.push(`${libs.vdj} V(D)J`);
+    if (libs.crispr > 0) parts.push(`${libs.crispr} CRISPR`);
+    if (libs.atac > 0) parts.push(`${libs.atac} ATAC`);
+    return parts.join(' + ');
+  }
+  
+  // Update workflow table
+  function updateWorkflowTable(methods) {
+    const phases = [
+      { key: 'prep', name: '1. Sample Preparation' },
+      { key: 'gem', name: '2. GEM Generation & Barcoding' },
+      { key: 'cleanup', name: '3. Post-GEM Cleanup & Amplification' },
+      { key: 'lib', name: '4. Library Construction' },
+      { key: 'feature', name: '5. Optional Feature Libraries' }
+    ];
+    
+    const rows = phases.map(phase => {
+      return `<tr class="workflow-phase-row">
+        <td><strong>${phase.name}</strong></td>
+        ${methods.A ? `<td><div class="workflow">${methods.A.phases[phase.key]}</div></td>` : ''}
+        ${methods.B ? `<td><div class="workflow">${methods.B.phases[phase.key]}</div></td>` : ''}
+        ${methods.C ? `<td><div class="workflow">${methods.C.phases[phase.key]}</div></td>` : ''}
+      </tr>`;
+    });
+    
+    document.getElementById('workflowBody').innerHTML = rows.join('');
+  }
+  
+  // Event listeners
+  function attachListeners() {
+    // Update on any input change
+    const inputs = document.querySelectorAll('input, select');
+    inputs.forEach(input => {
+      input.addEventListener('change', updateComparison);
+      input.addEventListener('input', updateComparison);
+    });
+    
+    // Toggle method cards
+    ['A', 'B', 'C'].forEach(id => {
+      document.getElementById('enable' + id).addEventListener('change', updateComparison);
+      
+      // When assay changes, update available add-ons
+      document.getElementById('assay' + id).addEventListener('change', function() {
+        updateAvailableAddons(id);
+        validateSampleType();
+      });
+      
+      // When prep selection changes, revalidate (important for Multiome nuclei check)
+      document.getElementById(id + '_prep').addEventListener('change', function() {
+        validateSampleType();
+      });
+    });
+    
+    // Sample type validation
+    document.getElementById('sampleType').addEventListener('change', validateSampleType);
+    
+    // Comparison selector buttons
+    document.querySelectorAll('.comparison-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        // Remove active from all buttons
+        document.querySelectorAll('.comparison-btn').forEach(b => b.classList.remove('active'));
+        // Add active to clicked button
+        this.classList.add('active');
+        
+        // Get selected count
+        const count = parseInt(this.getAttribute('data-count'));
+        
+        // Enable/disable methods based on count
+        document.getElementById('enableA').checked = count >= 1;
+        document.getElementById('enableB').checked = count >= 2;
+        document.getElementById('enableC').checked = count >= 3;
+        
+        // Trigger update
+        updateComparison();
+      });
+    });
+  }
+  
+  // Update available add-ons based on assay selection
+  function updateAvailableAddons(id) {
+    const assay = document.getElementById('assay' + id).value;
+    
+    const surfaceCheck = document.getElementById(id + '_surface');
+    const intraCheck = document.getElementById(id + '_intra');
+    const vdjCheck = document.getElementById(id + '_vdj');
+    const crisprCheck = document.getElementById(id + '_crispr');
+    const prepCheck = document.getElementById(id + '_prep');
+    const targetInput = document.getElementById('target' + id);
+    
+    // Auto-fill target recovery based on assay
+    const targetRecovery = {
+      'flex': 20000,
+      'single_3': 20000,
+      'single_5': 20000,
+      'ocm3': 5000,
+      'ocm5': 5000,
+      'multiome': 10000
+    };
+    
+    targetInput.value = targetRecovery[assay] || 20000;
+    
+    // Reset all to enabled first
+    [surfaceCheck, intraCheck, vdjCheck, crisprCheck, prepCheck].forEach(check => {
+      if (check) {
+        check.disabled = false;
+        check.parentElement.style.opacity = '1';
+        check.parentElement.style.cursor = 'pointer';
+      }
+    });
+    
+    if (assay === 'multiome') {
+      // Multiome: disable all add-ons EXCEPT prep (nuclei extraction allowed)
+      surfaceCheck.disabled = true;
+      surfaceCheck.checked = false;
+      surfaceCheck.parentElement.style.opacity = '0.4';
+      surfaceCheck.parentElement.style.cursor = 'not-allowed';
+      
+      intraCheck.disabled = true;
+      intraCheck.checked = false;
+      intraCheck.parentElement.style.opacity = '0.4';
+      intraCheck.parentElement.style.cursor = 'not-allowed';
+      
+      vdjCheck.disabled = true;
+      vdjCheck.checked = false;
+      vdjCheck.parentElement.style.opacity = '0.4';
+      vdjCheck.parentElement.style.cursor = 'not-allowed';
+      
+      crisprCheck.disabled = true;
+      crisprCheck.checked = false;
+      crisprCheck.parentElement.style.opacity = '0.4';
+      crisprCheck.parentElement.style.cursor = 'not-allowed';
+      
+      // Keep prep enabled for nuclei extraction option
+      
+    } else if (assay === 'flex') {
+      // Flex: only surface protein and intracellular protein allowed
+      vdjCheck.disabled = true;
+      vdjCheck.checked = false;
+      vdjCheck.parentElement.style.opacity = '0.4';
+      vdjCheck.parentElement.style.cursor = 'not-allowed';
+      
+      crisprCheck.disabled = true;
+      crisprCheck.checked = false;
+      crisprCheck.parentElement.style.opacity = '0.4';
+      crisprCheck.parentElement.style.cursor = 'not-allowed';
+      
+    } else if (assay === 'single_3' || assay === 'ocm3') {
+      // 3' assays: no V(D)J, no CRISPR, no intracellular
+      intraCheck.disabled = true;
+      intraCheck.checked = false;
+      intraCheck.parentElement.style.opacity = '0.4';
+      intraCheck.parentElement.style.cursor = 'not-allowed';
+      
+      vdjCheck.disabled = true;
+      vdjCheck.checked = false;
+      vdjCheck.parentElement.style.opacity = '0.4';
+      vdjCheck.parentElement.style.cursor = 'not-allowed';
+      
+      crisprCheck.disabled = true;
+      crisprCheck.checked = false;
+      crisprCheck.parentElement.style.opacity = '0.4';
+      crisprCheck.parentElement.style.cursor = 'not-allowed';
+      
+    } else if (assay === 'single_5' || assay === 'ocm5') {
+      // 5' assays: no intracellular, but V(D)J and CRISPR allowed
+      intraCheck.disabled = true;
+      intraCheck.checked = false;
+      intraCheck.parentElement.style.opacity = '0.4';
+      intraCheck.parentElement.style.cursor = 'not-allowed';
+    }
+  }
+  
+  // Validate sample type against assay selections
+  function validateSampleType() {
+    const sampleType = document.getElementById('sampleType').value;
+    const warning = document.getElementById('sampleTypeWarning');
+    const warningText = document.getElementById('warningText');
+    
+    let hasBlockedMultiome = false;
+    let hasNonMultiome = false;
+    
+    // Check each method and show individual warnings
+    ['A', 'B', 'C'].forEach(id => {
+      const enabled = document.getElementById('enable' + id).checked;
+      const cardWarning = document.getElementById('warning' + id);
+      
+      if (!enabled) {
+        cardWarning.style.display = 'none';
+        return;
+      }
+      
+      const assay = document.getElementById('assay' + id).value;
+      const prepType = document.getElementById(id + '_prep').value;
+      
+      if (assay === 'multiome') {
+        if (!isMultiomeValid(id, assay)) {
+          hasBlockedMultiome = true;
+          cardWarning.style.display = 'block';
+          cardWarning.textContent = 'Multiome requires nuclei. Select "Single nuclei" as sample type above, OR select "Single nuclei extraction" in sample prep.';
+        } else {
+          cardWarning.style.display = 'none';
+        }
+      } else {
+        cardWarning.style.display = 'none';
+        if (sampleType === 'nuclei') {
+          hasNonMultiome = true;
+        }
+      }
+    });
+    
+    // Show top-level warning for non-Multiome with nuclei
+    if (hasNonMultiome) {
+      warning.style.display = 'block';
+      warning.className = 'msg info';
+      warningText.textContent = 'You selected "Single nuclei" but enabled non-Multiome assay(s). Most non-Multiome workflows work best with cells. Confirm this is intentional.';
+    } else {
+      warning.style.display = 'none';
+    }
+    
+    updateComparison();
+  }
+  
+  // Initialize
+  attachListeners();
+  
+  // Set initial add-on availability for all methods
+  ['A', 'B', 'C'].forEach(id => {
+    updateAvailableAddons(id);
+  });
+  
+  validateSampleType();
+  updateComparison();
+  
+})();
+</script>
+</body>
+</html>
