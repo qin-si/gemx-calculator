@@ -510,7 +510,7 @@
       <h3 style="margin-top: 24px;">HIM Service Pricing</h3>
       <div class="pricing-editor" style="opacity: 0.7;">
         <div class="pricing-item">
-          <label>Base fee per chip</label>
+          <label>Base fee per chip (up to 8 samples)</label>
           <input id="priceBase" type="number" value="732" readonly style="background: #f5f5f5; cursor: not-allowed;"/>
         </div>
         <div class="pricing-item">
@@ -1050,7 +1050,100 @@
       methods.B ? methods.B.timeline : '',
       methods.C ? methods.C.timeline : ''
     ]);
-    
+
+    // Calculate sequencing depth requirements based on 10x recommendations
+    // All values are read PAIRS per cell (10x standard)
+    function calcSeqDepth(m) {
+      if (!m) return '';
+      const target = m.target;
+      const samples = m.nSamples;
+
+      // 10x recommended read pairs per cell/nuclei
+      const gexReadPairs = 20000;   // Gene expression: 20,000 read pairs/cell
+      const vdjReadPairs = 5000;    // V(D)J: 5,000 read pairs/cell
+      const proteinReadPairs = 5000; // Feature barcode: 5,000 read pairs/cell
+      const atacReadPairs = 25000;  // ATAC: 25,000 read pairs/nucleus
+      const crisprReadPairs = 1000; // CRISPR: 1,000 read pairs/cell
+
+      // Libraries that can be pooled together (same index type / read structure):
+      // Pool 1: GEX + Feature Barcode (Protein, CRISPR) - can be combined
+      // Pool 2: V(D)J - separate (different read structure)
+      // Pool 3: ATAC - separate (different read structure)
+
+      let pool1Total = 0; // GEX + Protein + CRISPR
+      let pool1Parts = [];
+      let pool2Total = 0; // V(D)J
+      let pool3Total = 0; // ATAC
+
+      // Gene expression libraries (Pool 1)
+      if (m.libs.gene > 0) {
+        const gexTotal = target * samples * gexReadPairs;
+        pool1Total += gexTotal;
+        pool1Parts.push(`GEX: ${formatReadCount(gexTotal)}`);
+      }
+
+      // Protein libraries (Pool 1 - can combine with GEX)
+      if (m.libs.protein > 0) {
+        const proteinTotal = target * samples * proteinReadPairs;
+        pool1Total += proteinTotal;
+        pool1Parts.push(`Protein: ${formatReadCount(proteinTotal)}`);
+      }
+
+      // CRISPR libraries (Pool 1 - can combine with GEX)
+      if (m.libs.crispr > 0) {
+        const crisprTotal = target * samples * crisprReadPairs;
+        pool1Total += crisprTotal;
+        pool1Parts.push(`CRISPR: ${formatReadCount(crisprTotal)}`);
+      }
+
+      // V(D)J libraries (Pool 2 - separate run)
+      if (m.libs.vdj > 0) {
+        pool2Total = target * samples * vdjReadPairs;
+      }
+
+      // ATAC libraries (Pool 3 - separate run)
+      if (m.libs.atac > 0) {
+        pool3Total = target * samples * atacReadPairs;
+      }
+
+      // Build output with pooling info
+      let output = [];
+
+      if (pool1Total > 0) {
+        const poolLabel = pool1Parts.length > 1 ? '(can pool together)' : '';
+        output.push(`<strong>GEX Pool:</strong> ${formatReadCount(pool1Total)} ${poolLabel}<br/><span style="font-size: 11px; color: var(--muted);">${pool1Parts.join(' + ')}</span>`);
+      }
+
+      if (pool2Total > 0) {
+        output.push(`<strong>V(D)J:</strong> ${formatReadCount(pool2Total)} <span style="color: var(--warn);">(separate run)</span>`);
+      }
+
+      if (pool3Total > 0) {
+        output.push(`<strong>ATAC:</strong> ${formatReadCount(pool3Total)} <span style="color: var(--warn);">(separate run)</span>`);
+      }
+
+      const grandTotal = pool1Total + pool2Total + pool3Total;
+      output.push(`<br/><strong style="color: var(--accent);">Total: ${formatReadCount(grandTotal)} read pairs</strong>`);
+
+      return output.join('<br/>');
+    }
+
+    function formatReadCount(count) {
+      if (count >= 1e12) {
+        return (count / 1e12).toFixed(2) + 'T';
+      } else if (count >= 1e9) {
+        return (count / 1e9).toFixed(2) + 'B';
+      } else {
+        return (count / 1e6).toFixed(0) + 'M';
+      }
+    }
+
+    rows.push(['<strong>Sequencing Depth Required</strong><br/><span style="font-size: 11px; color: var(--muted);">(10x recommended minimum)</span>',
+      calcSeqDepth(methods.A),
+      calcSeqDepth(methods.B),
+      calcSeqDepth(methods.C)
+    ]);
+
     // Populate table
     const tbody = document.getElementById('comparisonBody');
     tbody.innerHTML = rows.map(r => 
