@@ -510,8 +510,8 @@
       <h3 style="margin-top: 24px;">HIM Service Pricing</h3>
       <div class="pricing-editor" style="opacity: 0.7;">
         <div class="pricing-item">
-          <label>Base fee per chip (up to 8 samples)</label>
-          <input id="priceBase" type="number" value="732" readonly style="background: #f5f5f5; cursor: not-allowed;"/>
+          <label>Base fee per chip (8 samples/chip; Flex up to 96 samples/chip)</label>
+          <input id="priceBase" type="number" value="769" readonly style="background: #f5f5f5; cursor: not-allowed;"/>
         </div>
         <div class="pricing-item">
           <label>Sample prep per sample</label>
@@ -900,6 +900,7 @@
     const featureLibs = libs.protein + libs.vdj + libs.crispr + libs.atac; // ATAC IS charged as feature
     
     // Calculate costs
+    // HIM base fee is charged per chip
     const baseFee = chips * priceBase;
     const prepFee = addons.prep ? nSamples * pricePrep : 0;
     const featureFee = featureLibs * priceFeature;
@@ -923,6 +924,7 @@
       totalLibs,
       featureLibs,
       baseFee,
+      priceBase,
       prepFee,
       featureFee,
       totalCost,
@@ -1015,10 +1017,12 @@
       methods.C ? methods.C.totalLibs : ''
     ]);
     
+    const fmtBase = m => '<span class="mono">' + fmt(m.baseFee) + '</span>' +
+      '<br/><span class="small" style="color: var(--muted);">' + m.chips + ' chip' + (m.chips > 1 ? 's' : '') + ' × ' + fmt(m.priceBase) + '</span>';
     rows.push(['<strong>HIM Base Fee</strong>',
-      methods.A ? '<span class="mono">' + fmt(methods.A.baseFee) + '</span>' : '',
-      methods.B ? '<span class="mono">' + fmt(methods.B.baseFee) + '</span>' : '',
-      methods.C ? '<span class="mono">' + fmt(methods.C.baseFee) + '</span>' : ''
+      methods.A ? fmtBase(methods.A) : '',
+      methods.B ? fmtBase(methods.B) : '',
+      methods.C ? fmtBase(methods.C) : ''
     ]);
     
     rows.push(['<strong>Sample Prep Fee</strong>',
